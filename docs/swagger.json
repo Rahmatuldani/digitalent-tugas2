@@ -1,0 +1,95 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Sample service for orders",
+        "title": "Orders API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:5000",
+    "basePath": "/api",
+    "paths": {
+        "/orders": {
+            "get": {
+                "description": "Get all orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get all orders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Orders"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Items": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "itemCode": {
+                    "type": "string"
+                },
+                "itemId": {
+                    "type": "integer"
+                },
+                "orderId": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Orders": {
+            "type": "object",
+            "properties": {
+                "customerName": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Items"
+                    }
+                },
+                "orderId": {
+                    "type": "integer"
+                },
+                "orderedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

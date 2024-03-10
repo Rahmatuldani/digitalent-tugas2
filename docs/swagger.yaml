@@ -1,0 +1,62 @@
+basePath: /api
+definitions:
+  models.Items:
+    properties:
+      description:
+        type: string
+      itemCode:
+        type: string
+      itemId:
+        type: integer
+      orderId:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  models.Orders:
+    properties:
+      customerName:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/models.Items'
+        type: array
+      orderId:
+        type: integer
+      orderedAt:
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+host: localhost:5000
+info:
+  contact: {}
+  description: Sample service for orders
+  title: Orders API
+  version: "1.0"
+paths:
+  /orders:
+    get:
+      consumes:
+      - application/json
+      description: Get all orders
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Orders'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get all orders
+      tags:
+      - Orders
+swagger: "2.0"
