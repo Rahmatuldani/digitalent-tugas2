@@ -6,15 +6,24 @@ import (
 	"gorm.io/gorm"
 )
 
+type Items struct {
+	Id      uint8  `json:"itemId" gorm:"primaryKey"`
+	Code    string `json:"itemCode" gorm:"not null"`
+	Desc    string `json:"description" gorm:"not null"`
+	Qty     uint8  `json:"quantity" gorm:"not null"`
+	OrderId uint8
+}
+
 type Orders struct {
 	Id        uint8  	`json:"orderId" gorm:"primaryKey"`
 	Customer  string 	`json:"customerName" gorm:"not null"`
 	OrderedAt time.Time	`json:"orderedAt"`
-	Items     []Items	`json:"items" gorm:"foreignKey:Id"`
+	Items     []Items	`json:"items" gorm:"foreignKey:OrderId"`
 }
 
 type ModelsInterface interface {
 	FindAll() ([]Orders, error)
+	Create(Orders) error
 }
 
 type ModelsStruct struct {
@@ -28,21 +37,16 @@ func NewModels(Db *gorm.DB) ModelsInterface {
 
 func (m *ModelsStruct) FindAll() ([]Orders, error) {
 	var orders []Orders
-	result := []Orders{}
 
-	err := m.Db.Find(&orders).Error
+	err := m.Db.Model(&Orders{}).Preload("Items").Find(&orders).Error
 	if err != nil {
 		return nil, err
 	}
 
-	for _, v := range orders {
-		Items := GetItems(v.Id, m.Db)
-		result = append(result, Orders{
-			Id: v.Id,
-			Customer: v.Customer,
-			OrderedAt: v.OrderedAt,
-			Items: Items,
-		})
-	}
-	return result, nil
+	return orders, nil
+}
+
+func (m *ModelsStruct) Create(data Orders) error {
+	err := m.Db.Create(&data).Error
+	return err
 }
