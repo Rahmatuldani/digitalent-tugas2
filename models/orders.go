@@ -24,6 +24,7 @@ type Orders struct {
 type ModelsInterface interface {
 	FindAll() ([]Orders, error)
 	Create(Orders) error
+	Delete(uint8) (int, string, error)
 }
 
 type ModelsStruct struct {
@@ -49,4 +50,19 @@ func (m *ModelsStruct) FindAll() ([]Orders, error) {
 func (m *ModelsStruct) Create(data Orders) error {
 	err := m.Db.Create(&data).Error
 	return err
+}
+
+func (m *ModelsStruct) Delete(id uint8) (int, string, error) {
+	var order Orders
+	if err := m.Db.First(&order, id).Error; err != nil {
+		return 404, "Order not found", err
+	}
+
+	if err := m.Db.Where("order_id = ?", id).Delete(&Items{}).Error; err != nil {
+		return 500, "Deleted Failed", err
+	}
+	if err := m.Db.Delete(&Orders{}, id).Error; err != nil {
+		return 500, "Deleted Failed", err
+	}
+	return 200, "Deleted success", nil
 }

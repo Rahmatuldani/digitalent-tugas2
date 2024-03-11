@@ -20,6 +20,7 @@ func Routers() *gin.Engine {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	baseRouter := r.Group("/api")
 	{
+		baseRouter.DELETE("/orders/:id", controllers.DeleteOrder)
 		baseRouter.GET("/orders", controllers.GetOrders)
 		baseRouter.POST("/orders", controllers.CreateOrder)
 	}
