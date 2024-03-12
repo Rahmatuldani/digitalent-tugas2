@@ -16,10 +16,10 @@ type Items struct {
 }
 
 type Orders struct {
-	Id        uint8  	`json:"orderId" gorm:"primaryKey"`
-	Customer  string 	`json:"customerName" gorm:"not null"`
-	OrderedAt time.Time	`json:"orderedAt"`
-	Items     []Items	`json:"items" gorm:"foreignKey:OrderId"`
+	Id        uint8     `json:"orderId" gorm:"primaryKey"`
+	Customer  string    `json:"customerName" gorm:"not null"`
+	OrderedAt time.Time `json:"orderedAt"`
+	Items     []Items   `json:"items" gorm:"foreignKey:OrderId"`
 }
 
 type ModelsInterface interface {
@@ -54,16 +54,24 @@ func (m *ModelsStruct) Update(id uint8, data request.UpdateOrderRequest) (Orders
 	if err := m.Db.First(&order, id).Error; err != nil {
 		return order, err
 	}
-	
-	for _, v := range data.Items{
-		if err := m.Db.Where("order_id = ? AND id = ?", id, v.Id).Save(&Items{Code: v.Code, Desc: v.Desc, Qty: v.Qty,}).Error; err != nil {
-			return order, err
-		}
+	order.Customer = data.Customer
+	order.OrderedAt = data.OrderedAt
+
+	for _, v := range data.Items {
+		var item Items
+		m.Db.Where("order_id = ? AND id = ?", id, v.Id).First(&item)
+		item.Code = v.Code
+		item.Desc = v.Desc
+		item.Qty = v.Qty
+		m.Db.Save(&item)
+		order.Items = append(order.Items, item)
+		// if err := m.Db.Where("order_id = ? AND id = ?", id, v.Id).Save(&Items{Code: v.Code, Desc: v.Desc, Qty: v.Qty,}).Error; err != nil {
+		// 	return order, err
+		// }
 	}
-	if err := m.Db.Where("id = ?", id).Save(&Orders{Customer: data.Customer, OrderedAt: data.OrderedAt}).Error; err != nil {
-		return order, err
-	}
-	
+
+	m.Db.Save(&order)
+
 	return order, nil
 }
 
