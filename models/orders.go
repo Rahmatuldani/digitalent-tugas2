@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/Rahmatuldani/assignment2/data/request"
 	"gorm.io/gorm"
 )
 
@@ -24,6 +25,7 @@ type Orders struct {
 type ModelsInterface interface {
 	FindAll() ([]Orders, error)
 	Create(Orders) error
+	Update(uint8, request.UpdateOrderRequest) (Orders, error)
 	Delete(uint8) (int, string, error)
 }
 
@@ -45,6 +47,24 @@ func (m *ModelsStruct) FindAll() ([]Orders, error) {
 	}
 
 	return orders, nil
+}
+
+func (m *ModelsStruct) Update(id uint8, data request.UpdateOrderRequest) (Orders, error) {
+	var order Orders
+	if err := m.Db.First(&order, id).Error; err != nil {
+		return order, err
+	}
+	
+	for _, v := range data.Items{
+		if err := m.Db.Where("order_id = ? AND id = ?", id, v.Id).Save(&Items{Code: v.Code, Desc: v.Desc, Qty: v.Qty,}).Error; err != nil {
+			return order, err
+		}
+	}
+	if err := m.Db.Where("id = ?", id).Save(&Orders{Customer: data.Customer, OrderedAt: data.OrderedAt}).Error; err != nil {
+		return order, err
+	}
+	
+	return order, nil
 }
 
 func (m *ModelsStruct) Create(data Orders) error {
